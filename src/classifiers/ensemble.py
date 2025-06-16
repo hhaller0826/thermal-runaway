@@ -4,7 +4,7 @@ from sklearn.ensemble import VotingClassifier, StackingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, auc
 
-from src.classifiers.classical import model_defs
+from src.classifiers.classical import model_defs, CLASSICAL_MODELS
 
 ENSEMBLE_MODELS = ["Voting", "Stacking"]
 def _model_defs(name, estimators):
@@ -21,8 +21,9 @@ def classify(models_ran, name, train, test, confusion_matrices={}, roc_curves={}
     """
     estimators = []
     for m in models_ran:
-        (v, _) = model_defs(m)
-        estimators.append((m, v))
+        if m in CLASSICAL_MODELS:
+            (v, _) = model_defs(m)
+            estimators.append((m, v))
     model = _model_defs(name, estimators)
     model.fit(train.X_scaled, train.y)
     y_prob = model.predict_proba(test.X_scaled)[:,1]

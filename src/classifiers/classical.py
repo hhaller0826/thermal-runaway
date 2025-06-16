@@ -7,14 +7,18 @@ from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, auc
 
-from tensorflow.python.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout, Conv1D, MaxPooling1D, Flatten
+import warnings
+warnings.filterwarnings(action="ignore", category=UserWarning)
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Dropout, Conv1D, MaxPooling1D, Flatten, Input
 from tensorflow.keras.optimizers import Adam
 
 #Deep Learning Models
 def build_lstm(units=64, learning_rate=0.001, features=2):
     model = Sequential([
-        LSTM(units, input_shape=(config.WINDOW_SIZE, features)),
+        Input(shape=(config.WINDOW_SIZE, features)),
+        LSTM(units),
         Dropout(0.2),
         Dense(1, activation='sigmoid')
     ])
@@ -23,7 +27,8 @@ def build_lstm(units=64, learning_rate=0.001, features=2):
 
 def build_cnn(filters=32, kernel_size=3, learning_rate=0.001, features=2):
     model = Sequential([
-        Conv1D(filters, kernel_size, activation='relu', input_shape=(config.WINDOW_SIZE, features)),
+        Input(shape=(config.WINDOW_SIZE, features)),
+        Conv1D(filters, kernel_size, activation='relu'),
         MaxPooling1D(2),
         Flatten(),
         Dense(32, activation='relu'),
