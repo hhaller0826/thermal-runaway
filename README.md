@@ -1,1 +1,4 @@
 # thermal-runaway
+
+dependencies:
+- openpyxl
