@@ -16,7 +16,7 @@ class OakRidge(Organization):
     def __init__(self):
         super().__init__('oakridge', input_dir=f'{config.RAW_DATA_DIR}oakridge/excel')
         self.file_info = pd.read_excel('data/raw/oakridge/main.xlsx', header=None)
-        self.time_substrings = ['Time', '°C', '[C]']
+        self.file_info = self._process_file_info()
 
     def _process_file_info(self):
         main_df = pd.read_excel('data/raw/oakridge/main.xlsx', header=None)
@@ -28,6 +28,7 @@ class OakRidge(Organization):
                 'soc': int(match.group(1)) if (match := re.search(r'(\d+)[S0]OC', file)) else None,
                 'battery_type': next((bt for bt in _battery_types if bt in file), None),
             }
+        return file_info
 
     def _time_substrings():
         return ['Time']
