@@ -17,7 +17,6 @@ class TimeseriesData:
        for key, val in kwargs.items():
            self.additional_data[key] = val
 
-
    def to_dict(self):
        return {
            'time_in_s': self.time_in_s,
@@ -29,12 +28,11 @@ class TimeseriesData:
        return pd.DataFrame(self.to_dict())
   
    def display(self, n=None):
-       return pd.DataFrame({'Time': self.time_in_s, 'Temp (°C)': self.temperature_in_C}).head(n)
+       return pd.DataFrame({'Time (s)': self.time_in_s, 'Temp (°C)': self.temperature_in_C}).head(n)
   
    @staticmethod
    def load(obj):
        return TimeseriesData(**obj)
-
 
 class BatteryData:
    # NOTE: We could split this into cycles for the healthy data but since
@@ -66,7 +64,6 @@ class BatteryData:
            )
        self.is_healthy = is_healthy
 
-
        self.state_of_charge = state_of_charge
        self.battery_type = battery_type
        self.anode_material = anode_material
@@ -75,7 +72,6 @@ class BatteryData:
        self.nominal_capacity_in_Ah = nominal_capacity_in_Ah
        self.form_factor = form_factor
        self.description = description
-
 
        for key, val in kwargs.items():
            setattr(self, key, val)
@@ -99,7 +95,6 @@ class BatteryData:
        with open(path, 'wb') as fout:
            pickle.dump(self.to_dict(), fout)
 
-
    def print_description(self):
        print(f'**************description of battery cell {self.cell_id}**************')
        for key, val in self.__dict__.items():
@@ -107,7 +102,6 @@ class BatteryData:
                print(f'cycle length: {len(val)}')
            elif val != None:
                print(f'{key}: {val}')
-
 
    @staticmethod
    def load(path):
