@@ -146,7 +146,7 @@ class ULPurduePreprocessor(HealthyArchivePreprocessor):
     def get_capacity(self, cell): 
         capacity = 3.4
         if '2.5-96.5' in cell:  # Only charge for 94%
-            capacity *= 0.94 * 3.4
+            capacity *= 0.94
         return capacity
     
     def get_form_factor(self, cell):
