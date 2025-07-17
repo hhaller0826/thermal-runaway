@@ -9,7 +9,7 @@ from pathlib import Path
 
 from src.builders import PREPROCESSORS
 from src.preprocessing.base import BasePreprocessor
-from src.preprocessing.battery_data import BatteryData, TimeseriesData
+from src.data.battery_data import BatteryData, TimeseriesData
 
 class HealthyArchivePreprocessor(BasePreprocessor):
     def process(self, parentdir=None, *args, **kwargs):

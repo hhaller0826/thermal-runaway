@@ -9,7 +9,7 @@ from pathlib import Path
 
 from src.builders import PREPROCESSORS
 from src.preprocessing.base import BasePreprocessor
-from src.preprocessing.battery_data import BatteryData, TimeseriesData
+from src.data.battery_data import BatteryData, TimeseriesData
 
 @PREPROCESSORS.register()
 class ORNLPreprocessor(BasePreprocessor):
@@ -87,7 +87,7 @@ class ORNLPreprocessor(BasePreprocessor):
             anode_material='graphite',
             cathode_material=cathode,
             nominal_capacity_in_Ah=ah,
-            form_factor='cylindrical_18650', # this was form_factor for SNL in BatteryML...
+            form_factor='pouch', # this was form_factor for SNL in BatteryML...
         )
 
 def get_snl_failure_data(dataframe) -> List[TimeseriesData]:
@@ -104,12 +104,12 @@ def get_snl_failure_data(dataframe) -> List[TimeseriesData]:
    tc6 = dataframe['TC6 below punch [C]']
 
    return [
-       TimeseriesData(time_in_s=time, temperature_in_C=tc1),
-       TimeseriesData(time_in_s=time, temperature_in_C=tc2),
-       TimeseriesData(time_in_s=time, temperature_in_C=tc3),
-       TimeseriesData(time_in_s=time, temperature_in_C=tc4),
-       TimeseriesData(time_in_s=time, temperature_in_C=tc5),
-       TimeseriesData(time_in_s=time, temperature_in_C=tc6),
+       TimeseriesData(time_in_s=time, temperature_in_C=tc1, description='tc1, positive-terminal'),
+       TimeseriesData(time_in_s=time, temperature_in_C=tc2, description='tc2, negative-terminal'),
+       TimeseriesData(time_in_s=time, temperature_in_C=tc3, description='tc3, bottom-bottom'),
+       TimeseriesData(time_in_s=time, temperature_in_C=tc4, description='tc4, bottom-top'),
+       TimeseriesData(time_in_s=time, temperature_in_C=tc5, description='tc5, above-punch'),
+       TimeseriesData(time_in_s=time, temperature_in_C=tc6, description='tc6, below-punch'),
    ]
 
 def get_tcn_failure_data(dataframe) -> List[TimeseriesData]:
@@ -124,10 +124,10 @@ def get_tcn_failure_data(dataframe) -> List[TimeseriesData]:
    tc4 = dataframe['TC4 (°C)']
 
    return [
-       TimeseriesData(time_in_s=time, temperature_in_C=tc1),
-       TimeseriesData(time_in_s=time, temperature_in_C=tc2),
-       TimeseriesData(time_in_s=time, temperature_in_C=tc3),
-       TimeseriesData(time_in_s=time, temperature_in_C=tc4),
+       TimeseriesData(time_in_s=time, temperature_in_C=tc1, description='tc1'),
+       TimeseriesData(time_in_s=time, temperature_in_C=tc2, description='tc2'),
+       TimeseriesData(time_in_s=time, temperature_in_C=tc3, description='tc3'),
+       TimeseriesData(time_in_s=time, temperature_in_C=tc4, description='tc4'),
    ]
 
 _reltime_MAXC = ['LCO_4000mAh-10SOC_cell2_MAX.xlsx', 'NMC_10000mAh-30SOC_cell1_MAX.xlsx', 'LCO_4000mAh-40SOC_cell2_MAX.xlsx', 'NMC_10000mAh-60SOC_cell1_MAX.xlsx', 'NMC_10000mAh-10SOC_cell1MAX.xlsx', 'NMC_10000mAh-90SOC_cell1_MAX.xlsx', 'NMC_10000mAh-40SOC_cell1_MAX.xlsx', 'LCO_4000mAh-50SOC_cell2_MAX.xlsx', 'LCO_4000mAh-0SOC_cell2_MAX.xlsx', 'NMC_10000mAh-70SOC_cell1_MAX.xlsx', 'NMC_10000mAh-50SOC_cell2_MAX.xlsx', 'LFP_15000mAh_10SOC_max.xlsx', 'NMC_10000mAh-20SOC_cell1_MAX.xlsx']

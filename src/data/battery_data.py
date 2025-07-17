@@ -9,9 +9,11 @@ class TimeseriesData:
                 *,
                 time_in_s: List[float],
                 temperature_in_C: List[float] = None,
+                description: str = None,
                 **kwargs):
        self.time_in_s = time_in_s
        self.temperature_in_C = temperature_in_C
+       self.description = description
       
        self.additional_data = {}
        for key, val in kwargs.items():

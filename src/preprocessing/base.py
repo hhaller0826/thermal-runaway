@@ -8,7 +8,7 @@ from tqdm.auto import tqdm
 from pathlib import Path
 
 from src.config import config
-from src.preprocessing.battery_data import BatteryData, TimeseriesData
+from src.data.battery_data import BatteryData, TimeseriesData
 
 class BasePreprocessor:
     """
@@ -26,7 +26,7 @@ class BasePreprocessor:
                 silent: bool = True):
         self.name = name
         self.display_name = display_name or name
-        self.output_dir = output_dir or f'{config.PROCESSED_DATA_DIR}{name}/'
+        self.output_dir = output_dir or f'{config.PROCESSED_DATA_DIR}/'
         self.silent = silent
 
     def process(self, *args, **kwargs) -> List[BatteryData]:
