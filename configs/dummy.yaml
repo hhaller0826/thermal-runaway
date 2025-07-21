@@ -1,12 +1,14 @@
 
-name: 'hanita'
+name: 'example'
 train_test_split:
-  battery_filters: # can be any attribute of the BatteryData object. Values listed here will be EXCLUDED.
+  # can be any attribute of the BatteryData object. Values listed here will be EXCLUDED.
+  battery_filters: 
     organization:
       - 'calce'
       - 'oxford'
     cathode_material:
       - 'NMC'
 
-  timeseries_filter:
+  # any Timeseries data with any of the following terms in its description will be EXCLUDED.
+  timeseries_filter: 
     - 'punch'
