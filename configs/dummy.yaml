@@ -1,0 +1,12 @@
+
+name: 'hanita'
+train_test_split:
+  battery_filters: # can be any attribute of the BatteryData object. Values listed here will be EXCLUDED.
+    organization:
+      - 'calce'
+      - 'oxford'
+    cathode_material:
+      - 'NMC'
+
+  timeseries_filter:
+    - 'punch'

@@ -1,0 +1,6 @@
+data_dir: 'data/'
+raw_data_dir: 'data/raw'
+processed_data_dir: 'data/preprocessed/'
+results_dir: 'results/'
+window_size: 100
+stride: 1

@@ -5,18 +5,21 @@ import importlib.util
 import yaml
 import os
 from addict import Dict
+from pathlib import Path
 
 
-def import_config(path: str, attr: list):
+def import_config(path, attr: list):
     """_summary_
 
     Args:
-        path (str): path to the config file
+        path : path to the config file
         attr (list): list of attributes to be imported
 
     Returns:
         configs (dict): dict of objects from the config file
     """
+    if not isinstance(path, Path):
+        path = Path(path)
 
     if path.suffix == '.yaml':
         config = YamlHandler(path).read_yaml()
@@ -42,7 +45,7 @@ def import_config(path: str, attr: list):
             raise ValueError(f"Invalid value for config field: {field}")
 
     return {
-        field: getattr(config, field) if hasattr(config, field) else {}
+        field: getattr(config, field) if hasattr(config, field) else None
         for field in attr
     }
 

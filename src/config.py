@@ -1,4 +1,3 @@
-
 class config:
     DATA_DIR = "data/"
     RAW_DATA_DIR = "data/raw/"
