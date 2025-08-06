@@ -5,8 +5,7 @@ import abc
 import torch
 import shutil
 
-from batteryml.data.databundle import DataBundle
-
+from src.data import DataBundle
 
 class BaseModel(abc.ABC):
     """Scikit-learn-like interface for models."""

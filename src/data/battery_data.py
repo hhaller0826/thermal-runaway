@@ -1,9 +1,9 @@
 # Based on Microsoft BatteryML repo
 import pickle
 import pandas as pd
+import numpy as np
 
 from typing import List
-
 class TimeseriesData:
    def __init__(self,
                 *,
@@ -28,9 +28,13 @@ class TimeseriesData:
   
    def to_df(self):
        return pd.DataFrame(self.to_dict())
+   
+   def to_numpy(self):
+       return np.array(list(self.to_dict().values())).T
   
    def display(self, n=None):
-       return pd.DataFrame({'Time (s)': self.time_in_s, 'Temp (°C)': self.temperature_in_C}).head(n)
+       if self.description: print(f'\nTimeseries Data description: {self.description}')
+       return self.to_df().head(n)
   
    @staticmethod
    def load(obj):

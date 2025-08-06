@@ -8,7 +8,7 @@ from tqdm.auto import tqdm
 from pathlib import Path
 
 from src.config import config
-from src.data.battery_data import BatteryData, TimeseriesData
+from src.data import BatteryData, TimeseriesData
 
 class BasePreprocessor:
     """

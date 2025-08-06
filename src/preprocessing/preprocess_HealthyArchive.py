@@ -3,13 +3,13 @@ import os
 import re
 import pandas as pd
 
-from tqdm.auto import tqdm
 from typing import List
 from pathlib import Path
 
 from src.builders import PREPROCESSORS
-from src.preprocessing.base import BasePreprocessor
-from src.data.battery_data import BatteryData, TimeseriesData
+from src.data import BatteryData, TimeseriesData
+
+from .base import BasePreprocessor
 
 class HealthyArchivePreprocessor(BasePreprocessor):
     def process(self, parentdir=None, *args, **kwargs):
