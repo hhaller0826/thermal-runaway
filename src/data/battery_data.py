@@ -5,7 +5,7 @@ import numpy as np
 
 from typing import List
 class TimeseriesData:
-   def __init__(self,
+    def __init__(self,
                 *,
                 time_in_s: List[float],
                 temperature_in_C: List[float] = None,
@@ -19,25 +19,28 @@ class TimeseriesData:
        for key, val in kwargs.items():
            self.additional_data[key] = val
 
-   def to_dict(self):
+    def __len__(self):
+       return len(self.time_in_s)
+
+    def to_dict(self):
        return {
            'time_in_s': self.time_in_s,
            'temperature_in_C': self.temperature_in_C,
            **self.additional_data
        }
   
-   def to_df(self):
+    def to_df(self):
        return pd.DataFrame(self.to_dict())
    
-   def to_numpy(self):
+    def to_numpy(self):
        return np.array(list(self.to_dict().values())).T
   
-   def display(self, n=None):
+    def display(self, n=None):
        if self.description: print(f'\nTimeseries Data description: {self.description}')
        return self.to_df().head(n)
   
-   @staticmethod
-   def load(obj):
+    @staticmethod
+    def load(obj):
        return TimeseriesData(**obj)
 
 class BatteryData:

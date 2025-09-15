@@ -17,8 +17,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Input, LSTM, RepeatVector, TimeDistributed, Dense, BatchNormalization
 from tensorflow.keras.models import Model
 from tensorflow.keras import optimizers
-
-
+from sklearn.metrics import root_mean_squared_error
 
 
 def get_windows(cells, window_size=1000):
@@ -38,14 +37,14 @@ def get_windows(cells, window_size=1000):
     std = all_train_data.std(axis=0)
 
     X = []
-    # scaler = StandardScaler()
     for filename in cells: 
         for data in BatteryData.load(filename).timeseries_data:
-            # scaledx = (data - mean) / std 
-            # scaledx = scaler.fit_transform(torch.tensor(data.to_numpy(), dtype=torch.float32))
             scaledx = data.to_numpy()
             scaledx = scaledx[:, 1]
             temps = scaledx[~np.isnan(scaledx)]
+
+            # TODO: Don't need to move window 1 time step at a time
+            # Potential issue: we may want to change time window and slide based on size of time steps
             for i in range(len(temps) - window_size):
                 X.append(temps[i:i+window_size])
 
@@ -85,3 +84,13 @@ def build_lstm_autoencoder(input_shape):
     autoencoder = Model(inputs, decoded)
 
     return autoencoder
+
+def plot_results(data, preds, title='Error Rates over Time', xlabel='Timestep', ylabel='RMSE', ylim=55):
+    x_values = range(data.shape[0])
+    y_values = [root_mean_squared_error(data[i], preds[i]) for i in x_values]
+    plt.plot(x_values, y_values)
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.ylim(top=ylim)
+    plt.show()
