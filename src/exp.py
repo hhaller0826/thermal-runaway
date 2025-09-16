@@ -64,24 +64,27 @@ def build_lstm_autoencoder(input_shape):
     Returns:
         tf.keras.models.Model: The LSTM autoencoder model.
     """
-    inputs = Input(shape=input_shape)
-
     # Encoder
-    encoded = LSTM(128, return_sequences=True)(inputs)
-    encoded = TimeDistributed(BatchNormalization())(encoded)
-    encoded = LSTM(64, activation='relu', return_sequences=False)(encoded)
-    encoded = BatchNormalization()(encoded)
+    encoder = [
+        Input(shape=input_shape),
+        LSTM(128, return_sequences=True),
+        TimeDistributed(BatchNormalization()),
+        LSTM(64, activation='relu', return_sequences=False),
+        BatchNormalization()
+    ]
 
     # Decoder
-    decoded = RepeatVector(input_shape[0])(encoded)
-    decoded = LSTM(64, return_sequences=True)(decoded)
-    decoded = TimeDistributed(BatchNormalization())(decoded)
-    decoded = LSTM(128, return_sequences=True)(decoded)
-    decoded = TimeDistributed(BatchNormalization())(decoded)
-    decoded = TimeDistributed(Dense(input_shape[1]))(decoded) # Output layer matches input features
+    decoder = [
+        RepeatVector(input_shape[0]),
+        LSTM(64, return_sequences=True),
+        TimeDistributed(BatchNormalization()),
+        LSTM(128, return_sequences=True),
+        TimeDistributed(BatchNormalization()),
+        TimeDistributed(Dense(input_shape[1]))
+    ]
 
     # Autoencoder model
-    autoencoder = Model(inputs, decoded)
+    autoencoder = Sequential(encoder + decoder)
 
     return autoencoder
 

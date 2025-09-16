@@ -5,7 +5,7 @@ dependencies:
 - openpyxl
 
 
-Expected file format for RAW healthy archive data:
+Expected folder hierarchy for RAW archive data:
 - healthy_archive_data
     - calce
     - hnei
@@ -18,3 +18,5 @@ Expected file format for RAW healthy archive data:
         - NCA
         - NMC
     - ul-purdue
+- oakridge
+    - excel
