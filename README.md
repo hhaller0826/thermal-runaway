@@ -11,6 +11,7 @@ dependencies:
 - tensorflow
 - matplotlib
 - seaborn
+- openpyxl
 
 
 Expected folder hierarchy for RAW archive data:
