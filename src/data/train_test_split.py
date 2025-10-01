@@ -1,6 +1,7 @@
 import os 
 import torch
 import numpy as np
+import random
 from glob import glob 
 from tqdm.auto import tqdm
 from sklearn.model_selection import train_test_split
@@ -8,8 +9,24 @@ from sklearn.model_selection import train_test_split
 from src.config import config
 from src.data import BatteryData
 
+def train_test_split_filenames(preprocessed_dir=config.PROCESSED_DATA_DIR, configs={}, test_size=0.2, random_state=42, dtype=None):
+    configs = configs.get('train_test_split', configs) # open configs if needed
 
-def load_train_test_split(preprocessed_dir = config.PROCESSED_DATA_DIR, configs = {}, test_size=0.2, random_state=42, dtype=None):
+    pbar = tqdm(glob(os.path.join(preprocessed_dir, '*')), desc='Checking attributes')
+    battery_filters = configs.get('battery_filters', None) 
+
+    trainfiles, testfiles = [], []
+    for filename in pbar:
+        cell = BatteryData.load(filename)
+
+        if battery_filters and any(getattr(cell, filter, None) in getattr(battery_filters, filter) for filter in battery_filters):
+            continue
+        
+        testfiles.append(filename) if random.uniform(0, 1) < test_size else trainfiles.append(filename)
+
+    return trainfiles, testfiles
+
+def load_train_test_split(preprocessed_dir=config.PROCESSED_DATA_DIR, configs={}, test_size=0.2, random_state=42, dtype=None):
     """load data from the specified directory, filter based on the provided configs, and split into training & testing data.
     Parameters
     ----------

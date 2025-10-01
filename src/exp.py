@@ -11,6 +11,7 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt 
 import seaborn as sns 
 import os 
+from tqdm.auto import tqdm
 from datetime import datetime
 from tensorflow import keras 
 from tensorflow.keras.models import Sequential 
@@ -18,6 +19,35 @@ from tensorflow.keras.layers import Input, LSTM, RepeatVector, TimeDistributed, 
 from tensorflow.keras.models import Model
 from tensorflow.keras import optimizers
 from sklearn.metrics import root_mean_squared_error
+from src.utils.config import YamlHandler
+from src.data.train_test_split import train_test_split_filenames
+
+def print_data_stats(data, name='TRAINING DATA'):
+    print(f'\n==={name} STATS===')
+    print(f'mean: \t{data.mean()} \nstd: \t{data.std()} \nmin: \t{data.min()}\nmax: \t{data.max()}')
+    print(f'shape:\t {data.shape}')
+
+def trained_model_name(name=None):
+    dir = 'trained_models/'
+    if name: return dir + name + '.pkl'
+    return dir + f'trained_model_{len(os.listdir(dir))}.pkl'
+
+def get_health_divided_train_test(healthy_test_size=0.2, unhealthy_test_size=1):
+    healthy_configs = YamlHandler('configs/healthy.yaml').read_yaml()
+    healthy_train_cells, healthy_test_cells = train_test_split_filenames(
+        configs=healthy_configs,
+        test_size=healthy_test_size
+    )
+
+    unhealthy_configs = YamlHandler('configs/unhealthy.yaml').read_yaml()
+    unhealthy_train_cells, unhealthy_test_cells = train_test_split_filenames(
+        configs=unhealthy_configs,
+        test_size=unhealthy_test_size
+    )
+
+    train_cells = healthy_train_cells + unhealthy_train_cells
+    test_cells = healthy_test_cells + unhealthy_test_cells
+    return train_cells, test_cells
 
 
 def get_windows(cells, window_size=1000):
@@ -25,19 +55,8 @@ def get_windows(cells, window_size=1000):
     ignore the mean & std stuff that was for testing reasons
     also got rid of scaling bc im now doing batch normalization during training
     '''
-    data_arrays = []
-    for filename in cells: 
-        for data in BatteryData.load(filename).timeseries_data:
-            data = data.to_numpy()[:, 1]
-            data = data[~np.isnan(data)]
-            data_arrays.append(data)
-
-    all_train_data = np.concatenate(data_arrays, axis=0)
-    mean = all_train_data.mean(axis=0)
-    std = all_train_data.std(axis=0)
-
     X = []
-    for filename in cells: 
+    for filename in tqdm(cells, desc='Getting windows'): 
         for data in BatteryData.load(filename).timeseries_data:
             scaledx = data.to_numpy()
             scaledx = scaledx[:, 1]
@@ -51,7 +70,7 @@ def get_windows(cells, window_size=1000):
     X = np.array(X, dtype=np.float32)
     X = np.reshape(X, (X.shape[0], X.shape[1], 1))
 
-    return X, mean, std
+    return X
 
 
 def build_lstm_autoencoder(input_shape):

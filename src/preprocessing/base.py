@@ -56,7 +56,10 @@ class BasePreprocessor:
             # get data from the file
             try:
                 timeseries_data = self.get_timeseries_data(inputdir=inputdir, cell=cell, *args, **kwargs)
-            except:
+            except Exception as e:
+                if not self.silent:
+                    tqdm.write(f'Processing {cell} threw the following exception: {e}')
+
                 skip_batteries_num += 1
                 continue
 
@@ -87,12 +90,16 @@ class BasePreprocessor:
         expected_pkl_path = os.path.join(
             self.output_dir, (f"{processed_file}.pkl"))
         if os.path.exists(expected_pkl_path) and os.path.getsize(expected_pkl_path) > 0:
-            logging.info(
-                f'Skip processing {processed_file}, pkl file already exists and is not empty.')
+            info = f'Skip processing {processed_file}, pkl file already exists and is not empty.'
+            logging.info(info)
+            if not self.silent:
+                tqdm.write(info)
             return True
         elif os.path.exists(expected_pkl_path) and os.path.getsize(expected_pkl_path) == 0:
-            logging.info(
-                f'Found empty pkl file for {processed_file}.')
+            info = f'Found empty pkl file for {processed_file}.'
+            logging.info(info)
+            if not self.silent:
+                tqdm.write(info)
         return False
 
     def dump_single_file(self, battery: BatteryData):
