@@ -50,10 +50,12 @@ def get_health_divided_train_test(healthy_test_size=0.2, unhealthy_test_size=1):
     return train_cells, test_cells
 
 
-def get_windows(cells, window_size=1000):
+def get_windows(cells, window_size=1000, window_skip=0):
     '''
-    ignore the mean & std stuff that was for testing reasons
-    also got rid of scaling bc im now doing batch normalization during training
+    window_size: size of each segment of the timeseries data that the model will look at.
+    window_skip: when processing full data file i don't think we need to split it into windows [(t,t+window_size), (t+1,t+1+window_size)...] 
+        because that would mean that a file w 10,000 timesteps would have 9,900 windows. 
+        Instead can do [(t,t+window_size), (t+window_skip,t+window_skip+window_size)...] so that file would have fewer than 9900 windows. 
     '''
     X = []
     for filename in tqdm(cells, desc='Getting windows'): 
@@ -66,6 +68,7 @@ def get_windows(cells, window_size=1000):
             # Potential issue: we may want to change time window and slide based on size of time steps
             for i in range(len(temps) - window_size):
                 X.append(temps[i:i+window_size])
+                i += window_skip
 
     X = np.array(X, dtype=np.float32)
     X = np.reshape(X, (X.shape[0], X.shape[1], 1))
