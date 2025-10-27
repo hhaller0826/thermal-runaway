@@ -5,9 +5,26 @@ import random
 from glob import glob 
 from tqdm.auto import tqdm
 from sklearn.model_selection import train_test_split
+from src.utils.config import YamlHandler
 
 from src.config import config
 from src.data import BatteryData
+
+def get_health_divided_train_test(healthy_test_size=0.2, unhealthy_test_size=1):
+    healthy_train_cells, healthy_test_cells = get_divided_train_test(healthy_test_size)
+    unhealthy_train_cells, unhealthy_test_cells = get_divided_train_test(unhealthy_test_size)
+
+    train_cells = healthy_train_cells + unhealthy_train_cells
+    test_cells = healthy_test_cells + unhealthy_test_cells
+    return train_cells, test_cells
+
+def get_divided_train_test(test_size=0.2):
+    configs = YamlHandler('configs/healthy.yaml').read_yaml()
+    train_cells, test_cells = train_test_split_filenames(
+        configs=configs,
+        test_size=test_size
+    )
+    return train_cells, test_cells
 
 def train_test_split_filenames(preprocessed_dir=config.PROCESSED_DATA_DIR, configs={}, test_size=0.2, random_state=42, dtype=None):
     configs = configs.get('train_test_split', configs) # open configs if needed

@@ -19,8 +19,7 @@ from tensorflow.keras.layers import Input, LSTM, RepeatVector, TimeDistributed, 
 from tensorflow.keras.models import Model
 from tensorflow.keras import optimizers
 from sklearn.metrics import root_mean_squared_error
-from src.utils.config import YamlHandler
-from src.data.train_test_split import train_test_split_filenames
+from src.data.train_test_split import *
 
 def print_data_stats(data, name='TRAINING DATA'):
     print(f'\n==={name} STATS===')
@@ -31,24 +30,6 @@ def trained_model_name(name=None):
     dir = 'trained_models/'
     if name: return dir + name + '.pkl'
     return dir + f'trained_model_{len(os.listdir(dir))}.pkl'
-
-def get_health_divided_train_test(healthy_test_size=0.2, unhealthy_test_size=1):
-    healthy_configs = YamlHandler('configs/healthy.yaml').read_yaml()
-    healthy_train_cells, healthy_test_cells = train_test_split_filenames(
-        configs=healthy_configs,
-        test_size=healthy_test_size
-    )
-
-    unhealthy_configs = YamlHandler('configs/unhealthy.yaml').read_yaml()
-    unhealthy_train_cells, unhealthy_test_cells = train_test_split_filenames(
-        configs=unhealthy_configs,
-        test_size=unhealthy_test_size
-    )
-
-    train_cells = healthy_train_cells + unhealthy_train_cells
-    test_cells = healthy_test_cells + unhealthy_test_cells
-    return train_cells, test_cells
-
 
 def get_windows(cells, window_size=1000, window_skip=0):
     '''

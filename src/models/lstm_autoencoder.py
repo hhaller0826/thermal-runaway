@@ -6,21 +6,25 @@ class LSTMAutoencoder(keras.Sequential):
         self.training_data = training_data
         super().__init__(self.encoder + self.decoder)
 
-    @property
-    def training_data(self): 
-        return self._training_data
+    # @property
+    # def training_data(self): 
+    #     return self._training_data
 
-    @training_data.setter
-    def training_data(self, data): 
-        self._training_data = data
+    # @training_data.setter
+    # def training_data(self, data): 
+    #     self._training_data = data
 
     @property
     def timewindow_len(self): 
-        return self.training_data.shape[1]
-
+        # return self.training_data.dataset.window_size
+        # TODO
+        return 1000
+    
     @property 
     def num_features(self): 
-        return self.training_data.shape[2]
+        # return self.training_data.shape[2]
+        # TODO: currently only 1 bc we only doing temp. should be dynamic in future
+        return 1
     
     @property
     def encoder(self):
