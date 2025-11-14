@@ -29,6 +29,7 @@ class BatteryDataset(Dataset):
         This lets __getitem__ quickly locate which file/window to load.
         """
         print("Building dataset index...")
+        # TODO: currently appending all of the sensors one after the other
         X = []
         for file_idx, filename in enumerate(tqdm(self.cells)):
             try:
@@ -126,9 +127,10 @@ def get_divided_loaders(
     batch_size=64,
     num_workers=4,
     pin_memory=True,
-    preload=False
+    preload=False,
+    healthy=True
 ):
-    train_cells, test_cells = get_divided_train_test(test_size)
+    train_cells, test_cells = get_divided_train_test(test_size, 'healthy' if healthy else 'unhealthy')
 
     train_loader = DataLoader(
         BatteryDataset(train_cells, window_size, window_skip, preload=preload),

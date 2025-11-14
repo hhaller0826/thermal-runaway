@@ -40,8 +40,8 @@ class DataBundle:
                  train_label: torch.Tensor,
                  test_feature: torch.Tensor,
                  test_label: torch.Tensor,
-                #  feature_transformation: BaseDataTransformation = None,
-                #  label_transformation: BaseDataTransformation = None
+                 feature_transformation: BaseDataTransformation = None,
+                 label_transformation: BaseDataTransformation = None
                  ):
     #     # Convert the dtype
         train_feature = train_feature.float()
@@ -49,18 +49,18 @@ class DataBundle:
         test_feature = test_feature.float()
         test_label = test_label.float()
 
-    #     # self.feature_transformation = feature_transformation
-    #     # self.label_transformation = label_transformation
+        self.feature_transformation = feature_transformation
+        self.label_transformation = label_transformation
 
-    #     # # Fit the stateful transformations
-    #     # if feature_transformation is not None:
-    #     #     self.feature_transformation.fit(train_feature)
-    #     #     train_feature = self.feature_transformation.transform(train_feature)
-    #     #     test_feature = self.feature_transformation.transform(test_feature)
-    #     # if label_transformation is not None:
-    #     #     self.label_transformation.fit(train_label)
-    #     #     train_label = self.label_transformation.transform(train_label)
-    #     #     test_label = self.label_transformation.transform(test_label)
+        # Fit the stateful transformations
+        if feature_transformation is not None:
+            self.feature_transformation.fit(train_feature)
+            train_feature = self.feature_transformation.transform(train_feature)
+            test_feature = self.feature_transformation.transform(test_feature)
+        if label_transformation is not None:
+            self.label_transformation.fit(train_label)
+            train_label = self.label_transformation.transform(train_label)
+            test_label = self.label_transformation.transform(test_label)
 
     #     # Build datasets
         self.train_data = Dataset(train_feature, train_label)
@@ -69,10 +69,10 @@ class DataBundle:
     def to(self, device: str):
         self.train_data = self.train_data.to(device)
         self.test_data = self.test_data.to(device)
-        # if self.feature_transformation is not None:
-        #     self.feature_transformation = self.feature_transformation.to(device)
-        # if self.label_transformation is not None:
-        #     self.label_transformation = self.label_transformation.to(device)
+        if self.feature_transformation is not None:
+            self.feature_transformation = self.feature_transformation.to(device)
+        if self.label_transformation is not None:
+            self.label_transformation = self.label_transformation.to(device)
         return self
 
     @property
@@ -86,10 +86,10 @@ class DataBundle:
         else:
             target = self.test_data.label
             
-        # target = self.test_data.label
-        # if self.label_transformation is not None:
-        #     target = self.label_transformation.inverse_transform(target)
-        #     prediction = self.label_transformation.inverse_transform(prediction)
+        target = self.test_data.label
+        if self.label_transformation is not None:
+            target = self.label_transformation.inverse_transform(target)
+            prediction = self.label_transformation.inverse_transform(prediction)
 
         return self._evaluate_score(target, prediction, metric)
 

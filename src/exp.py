@@ -20,6 +20,80 @@ from tensorflow.keras.models import Model
 from tensorflow.keras import optimizers
 from sklearn.metrics import root_mean_squared_error
 from src.data.train_test_split import *
+from src.data import BatteryDataset
+from torch.utils.data import DataLoader
+import torch.nn as nn
+
+def evaluate_and_plot(filename, model, device='mps', window_size=1000, window_skip=500, threshold=500, sampling_rate=1):
+    evaluations = evaluate_health(
+        model,
+        filename,
+        device,
+        window_size,
+        window_skip,
+        threshold
+    )
+
+    bd = BatteryData.load(filename)
+    temps = bd.timeseries_data[0].to_dict()['temperature_in_C']
+    temps = np.array(list(temps))
+    y = temps[~np.isnan(temps)]
+    x = np.arange(len(y)) / sampling_rate
+
+    
+    highlight_indices = []
+    highlight_colors = []
+    for i,e in enumerate(evaluations):
+        highlight_indices.append(i*window_skip + 1000)
+        if e: highlight_colors.append('red')
+        else: highlight_colors.append('blue')
+
+    # Plot the line
+    plt.figure(figsize=(10, 5))
+    plt.plot(x, y, label='Data', color='gray')
+
+    # Overlay colored dots
+    for idx, color in zip(highlight_indices, highlight_colors):
+        plt.scatter(x[idx], y[idx], color=color, s=80, zorder=3, label=f'Index {idx}')
+
+    # Make it nice
+    plt.title(f"Evaluations of {filename.split('/')[-1].split('.')[0]}")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Temp (°C)")
+    plt.grid(alpha=0.3)
+    plt.show()
+
+def evaluate_health(model, filename, device, window_size, window_skip, threshold):
+    if 'mps' in device: torch.mps.empty_cache()
+    dataloader = DataLoader(
+        BatteryDataset([filename], window_size, window_skip),
+        batch_size=1,
+        shuffle=False,
+        num_workers=4
+    )
+    model.eval()
+    criterion = nn.MSELoss(reduction='none')
+    evaluations = []
+
+    pbar = tqdm(dataloader, desc='Evaluate', leave=False)
+    with torch.no_grad():
+        for batch in pbar:
+            x = batch.to(device)
+            recon = model(x)
+            recon_cpu = recon.detach().to('cpu')
+            del x, recon 
+
+            per_elem = criterion(recon_cpu, batch) # (batch, seq_len, 1)
+            per_sample_mse = per_elem.mean(dim=(1, 2)).cpu()  # (batch,)
+            if per_sample_mse[0] > threshold:
+                evaluations.append(1)
+            else:
+                evaluations.append(0)
+            if 'mps' in device: torch.mps.empty_cache()
+            
+    return evaluations
+
+
 
 def print_data_stats(data, name='TRAINING DATA'):
     print(f'\n==={name} STATS===')

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import pickle
 
 # -----------------------------
 # Transformer Autoencoder
@@ -58,6 +59,12 @@ class TransformerAutoencoder(nn.Module):
         out = out.permute(1, 0, 2)
         out = self.output_proj(out)
         return out
+    
+    @staticmethod
+    def load(path):
+       with open(path, 'rb') as fin:
+           obj = pickle.load(fin)
+       return obj
 
 
 # -----------------------------
