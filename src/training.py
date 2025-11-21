@@ -1,6 +1,7 @@
 import torch
+import torch.nn as nn
 from tqdm.auto import tqdm
-from src.models.nn_autoencoders import *
+# from src.models.nn_autoencoders import *
 
 
 def train_epoch(model, dataloader, device, mse_weight=1.0, clip_grad=None):

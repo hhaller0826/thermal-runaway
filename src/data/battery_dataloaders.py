@@ -39,7 +39,7 @@ class BatteryDataset(Dataset):
 
                 for data in battery.timeseries_data:
                     scaledx = data.to_numpy()[:, 1]
-                    temps = scaledx[~np.isnan(scaledx)]
+                    temps = scaledx[~np.isnan(scaledx)] # TODO: THIS IS HARD-CODED FOR TEMP
                     for start in range(0, len(temps) - self.window_size, self.window_skip):
                         self.index_map.append((file_idx, start))
                         if self.preload: X.append(temps[start:start + self.window_size])

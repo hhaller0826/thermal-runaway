@@ -94,10 +94,3 @@ def extract_attributes_from_cell(cell: BatteryData, configs = None):
         features.append(torch.tensor(data.to_numpy(), dtype=torch.float32))
     
     return features, [float(cell.is_healthy)] * len(features) 
-
-def get_channel_info(X: torch.tensor):
-    
-    return {
-        'input_height': X.shape[1],
-        'input_width': X.shape[2]
-    }
