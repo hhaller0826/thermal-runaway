@@ -11,12 +11,12 @@ from src.data import BatteryData, TimeseriesData
 from .base import BasePreprocessor
 
 @PREPROCESSORS.register()
-class CRPSPreprocessor(BasePreprocessor):
-    def __init__(self, name='crps', *, display_name = 'Cell Report Physical Science', output_dir = None, silent = True):
+class LithosPreprocessor(BasePreprocessor):
+    def __init__(self, name='lithos', *, display_name = 'Lithos Healthy Data', output_dir = None, silent = True):
         super().__init__(name, display_name=display_name, output_dir=output_dir, silent=silent)
 
     def process(self, parentdir=None, **kwargs):
-        inputdir = Path(parentdir) if parentdir else Path('data/raw/crps/ThermalRunaway_Overcharge')
+        inputdir = Path(parentdir) if parentdir else Path('data/raw/lithos')
         return super()._process_cells(inputdir=inputdir)
 
     def get_timeseries_data(self, inputdir, cell) -> List[TimeseriesData]:
@@ -36,11 +36,11 @@ class CRPSPreprocessor(BasePreprocessor):
             )]
 
     def get_cell_info(self, cell, timeseries_data) -> BatteryData:
-        org = 'snl' if "SNL_" in cell else 'CRPS'
+        org = 'snl' if "SNL_" in cell else 'Lithos'
         
         return BatteryData(
             cell_id=cell,
             organization=org,
             timeseries_data=timeseries_data,
-            is_healthy=False,
+            is_healthy=True,
         )
