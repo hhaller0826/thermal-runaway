@@ -6,22 +6,25 @@ from src.data import BatteryData
 from src.data.train_test_split import get_health_divided_train_test, get_divided_train_test
 
 class BatteryDataset(Dataset):
-    def __init__(self, cells, window_size=1000, window_skip=1, preload=False):
+    def __init__(self, cells, window_size=1000, window_skip=1, preload=False, index_tuple=(1)):
         """
         cells: list of filenames (paths to data)
         preload: if True, loads all data into memory at init (faster epoch time, more memory usage)
+
+        index_tuple: which columns to extract. In a file that has time then temp, (1) will extract only temp, (0,1) will extract both.
         """
         self.cells = cells
         self.window_size = window_size
         self.window_skip = window_skip
         self.preload = preload
+        self.index_tuple = index_tuple
 
         # Cached metadata
         self.index_map = []  # (file_idx, start_index)
         self.file_cache = {}  # Optional cache of loaded BatteryData objects
 
         # Build lookup table (maps global idx -> (file_idx, window_start))
-        self.data = self._build_index()
+        self.data = self._build_index() 
 
     def _build_index(self):
         """
@@ -38,8 +41,12 @@ class BatteryDataset(Dataset):
                 self.file_cache[file_idx] = None
 
                 for data in battery.timeseries_data:
-                    scaledx = data.to_numpy()[:, 1]
-                    temps = scaledx[~np.isnan(scaledx)] # TODO: THIS IS HARD-CODED FOR TEMP
+                    scaledx = data.to_numpy()[:, self.index_tuple]
+                    if len(scaledx.shape) == 1: # only 1 column
+                        temps = scaledx[~np.isnan(scaledx)] 
+                    else:
+                        temps = scaledx[~np.isnan(scaledx).any(axis=1)]
+
                     for start in range(0, len(temps) - self.window_size, self.window_skip):
                         self.index_map.append((file_idx, start))
                         if self.preload: X.append(temps[start:start + self.window_size])
@@ -48,7 +55,10 @@ class BatteryDataset(Dataset):
 
         if self.preload:
             X = np.array(X, dtype=np.float32)
-            X = np.reshape(X, (X.shape[0], self.window_size, 1))
+            if type(self.index_tuple) is int:
+                X = np.reshape(X, (X.shape[0], self.window_size, 1))
+            else:
+                X = np.reshape(X, (X.shape[0], self.window_size, len(self.index_tuple)))
             # X = torch.stack(X)
             return X
         
@@ -71,13 +81,20 @@ class BatteryDataset(Dataset):
 
         # Load corresponding file data (already in cache)
         for data in battery.timeseries_data:
-            scaledx = data.to_numpy()[:, 1]
-            temps = scaledx[~np.isnan(scaledx)]
+            scaledx = data.to_numpy()[:, self.index_tuple]
+            if len(scaledx.shape) == 1: # only 1 column
+                temps = scaledx[~np.isnan(scaledx)] 
+            else:
+                temps = scaledx[~np.isnan(scaledx).any(axis=1)]
 
             # Validate bounds
             if start + self.window_size <= len(temps):
                 x = temps[start:start + self.window_size]
-                x = x.astype(np.float32).reshape(self.window_size, 1)
+
+                if len(scaledx.shape) == 1:
+                    x = x.astype(np.float32).reshape(self.window_size, 1)
+                else:
+                    x = x.astype(np.float32).reshape(self.window_size, len(self.index_tuple))
                 # return torch.from_numpy(x)
                 return x
 
@@ -93,15 +110,16 @@ def get_health_divided_loaders(
     batch_size=64,
     num_workers=4,
     pin_memory=True,
-    preload=False
+    preload=False,
+    index_tuple=(1)
 ):
     train_cells, test_cells = get_health_divided_train_test(
         healthy_test_size=healthy_test_size,
         unhealthy_test_size=unhealthy_test_size
     )
 
-    train_dataset = BatteryDataset(train_cells, window_size, window_skip, preload=preload)
-    test_dataset = BatteryDataset(test_cells, window_size, window_skip, preload=preload)
+    train_dataset = BatteryDataset(train_cells, window_size, window_skip, preload=preload, index_tuple=index_tuple)
+    test_dataset = BatteryDataset(test_cells, window_size, window_skip, preload=preload, index_tuple=index_tuple)
 
     train_loader = DataLoader(
         train_dataset,
@@ -128,12 +146,13 @@ def get_divided_loaders(
     num_workers=4,
     pin_memory=True,
     preload=False,
-    healthy=True
+    healthy=True,
+    index_tuple=(1)
 ):
     train_cells, test_cells = get_divided_train_test(test_size, 'healthy' if healthy else 'unhealthy')
 
     train_loader = DataLoader(
-        BatteryDataset(train_cells, window_size, window_skip, preload=preload),
+        BatteryDataset(train_cells, window_size, window_skip, preload=preload, index_tuple=index_tuple),
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
@@ -141,7 +160,7 @@ def get_divided_loaders(
     ) if test_size < 1.0 else None 
 
     test_loader = DataLoader(
-        BatteryDataset(test_cells, window_size, window_skip, preload=preload),
+        BatteryDataset(test_cells, window_size, window_skip, preload=preload, index_tuple=index_tuple),
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
