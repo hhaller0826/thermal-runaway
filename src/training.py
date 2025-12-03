@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-from tqdm.auto import tqdm
-# from src.models.nn_autoencoders import *
+from tqdm import tqdm
 
 
 def train_epoch(model, dataloader, device, mse_weight=1.0, clip_grad=None):
@@ -10,7 +9,7 @@ def train_epoch(model, dataloader, device, mse_weight=1.0, clip_grad=None):
     criterion = nn.MSELoss(reduction='mean')
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-    pbar = tqdm(dataloader, desc="Train", leave=False)
+    pbar = tqdm(dataloader, desc="Train", leave=True)
     for batch in pbar:
         x = batch.to(device)
         optimizer.zero_grad()

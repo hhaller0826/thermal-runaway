@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 
 def evaluate_and_plot(filename, model, device='mps', window_size=1000, window_skip=500, threshold=500, sampling_rate=1):
-    evaluations = evaluate_health(
+    evaluations = evaluate_file_health(
         model,
         filename,
         device,
@@ -44,7 +44,7 @@ def evaluate_and_plot(filename, model, device='mps', window_size=1000, window_sk
     highlight_indices = []
     highlight_colors = []
     for i,e in enumerate(evaluations):
-        highlight_indices.append(i*window_skip + 1000)
+        highlight_indices.append(i*window_skip + window_size)
         if e: highlight_colors.append('red')
         else: highlight_colors.append('blue')
 
@@ -57,20 +57,36 @@ def evaluate_and_plot(filename, model, device='mps', window_size=1000, window_sk
         plt.scatter(x[idx], y[idx], color=color, s=80, zorder=3, label=f'Index {idx}')
 
     # Make it nice
-    plt.title(f"Evaluations of {filename.split('/')[-1].split('.')[0]}")
+    subtitle_font = {
+        'size': 8,
+        'style': 'italic'
+    }
+    plt.suptitle(f"Evaluations of {filename.split('/')[-1].split('.')[0]}")
+    plt.title(f"window_size={window_size}; window_skip={window_skip}", fontdict=subtitle_font)
     plt.xlabel("Time (s)")
     plt.ylabel("Temp (°C)")
     plt.grid(alpha=0.3)
     plt.show()
 
-def evaluate_health(model, filename, device, window_size, window_skip, threshold):
-    if 'mps' in device: torch.mps.empty_cache()
+def evaluate_file_health(model, filename, device, window_size, window_skip, threshold):
     dataloader = DataLoader(
-        BatteryDataset([filename], window_size, window_skip),
+        BatteryDataset([filename], window_size, window_skip, preload=True, index_tuple=(1)),
         batch_size=1,
         shuffle=False,
         num_workers=4
     )
+
+    return evaluate_health(
+        model,
+        dataloader,
+        device,
+        threshold
+    )
+
+
+def evaluate_health(model, dataloader, device, threshold):
+    if 'mps' in device: torch.mps.empty_cache()
+    
     model.eval()
     criterion = nn.MSELoss(reduction='none')
     evaluations = []

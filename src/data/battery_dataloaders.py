@@ -1,9 +1,10 @@
 import torch
+import json
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 from tqdm import tqdm
 from src.data import BatteryData
-from src.data.train_test_split import get_health_divided_train_test, get_divided_train_test
+from src.data.train_test_split import get_divided_train_test
 
 class BatteryDataset(Dataset):
     def __init__(self, cells, window_size=1000, window_skip=1, preload=False, index_tuple=(1)):
@@ -31,10 +32,9 @@ class BatteryDataset(Dataset):
         Precompute all window start indices per file and store them in index_map.
         This lets __getitem__ quickly locate which file/window to load.
         """
-        print("Building dataset index...")
         # TODO: currently appending all of the sensors one after the other
         X = []
-        for file_idx, filename in enumerate(tqdm(self.cells)):
+        for file_idx, filename in enumerate(tqdm(self.cells, desc="Building dataset index", leave=False)):
             try:
                 # Load metadata once per file
                 battery = BatteryData.load(filename)
@@ -101,43 +101,6 @@ class BatteryDataset(Dataset):
         # Safety fallback (should not occur)
         raise IndexError(f"Invalid index {idx} in dataset")
 
-
-def get_health_divided_loaders(
-    healthy_test_size=0.2,
-    unhealthy_test_size=1,
-    window_size=1000,
-    window_skip=1,
-    batch_size=64,
-    num_workers=4,
-    pin_memory=True,
-    preload=False,
-    index_tuple=(1)
-):
-    train_cells, test_cells = get_health_divided_train_test(
-        healthy_test_size=healthy_test_size,
-        unhealthy_test_size=unhealthy_test_size
-    )
-
-    train_dataset = BatteryDataset(train_cells, window_size, window_skip, preload=preload, index_tuple=index_tuple)
-    test_dataset = BatteryDataset(test_cells, window_size, window_skip, preload=preload, index_tuple=index_tuple)
-
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=num_workers,
-        # pin_memory=pin_memory
-    )
-    test_loader = DataLoader(
-        test_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=num_workers,
-        # pin_memory=pin_memory
-    )
-
-    return train_loader, test_loader
-
 def get_divided_loaders(
     test_size=0.2,
     window_size=1000,
@@ -151,13 +114,61 @@ def get_divided_loaders(
 ):
     train_cells, test_cells = get_divided_train_test(test_size, 'healthy' if healthy else 'unhealthy')
 
+    return help_get_divided_loaders(
+        train_cells if test_size < 1.0 else None,
+        test_cells if test_size > 0.0 else None,
+        window_size,
+        window_skip,
+        batch_size,
+        num_workers,
+        preload,
+        index_tuple
+    )
+
+def get_divided_loaders_from(
+    filelist1 = "trained_models/healthy_train_cells.json",
+    filelist2 = "trained_models/healthy_test_cells.json",
+    window_size=1000,
+    window_skip=1,
+    batch_size=64,
+    num_workers=4,
+    preload=False,
+    index_tuple=(1)
+):
+    with open(filelist1) as file:
+        train_cells = json.load(file)
+
+    with open(filelist2) as file:
+        test_cells = json.load(file)
+
+    return help_get_divided_loaders(
+        train_cells,
+        test_cells,
+        window_size,
+        window_skip,
+        batch_size,
+        num_workers,
+        preload,
+        index_tuple
+    )
+
+def help_get_divided_loaders(
+        train_cells,
+        test_cells,
+        window_size=1000,
+        window_skip=1,
+        batch_size=64,
+        num_workers=4,
+        preload=False,
+        index_tuple=(1)
+):
     train_loader = DataLoader(
         BatteryDataset(train_cells, window_size, window_skip, preload=preload, index_tuple=index_tuple),
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
         # pin_memory=pin_memory
-    ) if test_size < 1.0 else None 
+    ) if train_cells else None
 
     test_loader = DataLoader(
         BatteryDataset(test_cells, window_size, window_skip, preload=preload, index_tuple=index_tuple),
@@ -165,6 +176,6 @@ def get_divided_loaders(
         shuffle=False,
         num_workers=num_workers,
         # pin_memory=pin_memory
-    ) if test_size > 0.0 else None
+    ) if test_cells else None
 
     return train_loader, test_loader
