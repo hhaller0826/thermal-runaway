@@ -1,0 +1,8 @@
+.DS_Store
+__pycache__/
+
+data/preprocessed/
+data/raw/healthy_archive_data/
+
+results/reconstruction_errs/
+results/trained_models_old/
