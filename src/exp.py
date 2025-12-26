@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt 
 import seaborn as sns 
 import os 
-from tqdm.auto import tqdm
+from tqdm import tqdm
 from datetime import datetime
 from tensorflow import keras 
 from tensorflow.keras.models import Sequential 
@@ -54,6 +54,7 @@ def evaluate_and_plot(filename, model, device='mps', window_size=1000, window_sk
 
     # Overlay colored dots
     for idx, color in zip(highlight_indices, highlight_colors):
+        if idx >= len(y): break
         plt.scatter(x[idx], y[idx], color=color, s=80, zorder=3, label=f'Index {idx}')
 
     # Make it nice
@@ -91,7 +92,7 @@ def evaluate_health(model, dataloader, device, threshold):
     criterion = nn.MSELoss(reduction='none')
     evaluations = []
 
-    pbar = tqdm(dataloader, desc='Evaluate', leave=False)
+    pbar = tqdm(dataloader, desc='Evaluate', total=len(dataloader), leave=False)
     with torch.no_grad():
         for batch in pbar:
             x = batch.to(device)
