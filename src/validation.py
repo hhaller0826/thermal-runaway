@@ -14,6 +14,7 @@ from src.data.train_test_split import get_divided_train_test
 # -----------------------------
 # Plotting
 # -----------------------------
+DEFAULT_MODEL = "results/trained_models/3epoch_0.8healthy_500window_300step.pkl"
 SUBTITLE_FONT = {
     'size': 8,
     'style': 'italic'
@@ -74,7 +75,17 @@ def draw_plot(ax, x, y, colors, window_skip, window_size, title=None):
     ax.set_ylabel("Temp (°C)")
     
 
-def plot_multiple_evals_on_temp(err_file, model=None, title="TEST DATA", filenames=None, model_filename="trained_models/3epoch_0.8healthy_500window_300step.pkl", threshold=300, sampling_rate=0.1, ncols=3, nrows=6, figsize=(30, 30), xlim=None, ylim=None):
+def plot_multiple_evals_on_temp(err_file, model=None, model_filename=DEFAULT_MODEL, title="TEST DATA", filenames=None, threshold=300, sampling_rate=0.1, ncols=3, figsize=None, xlim=None, ylim=None):
+    """
+    - err_file:     json file with the structure file["data"]["filename"] = list of reconstruction errors
+    - model:        The model to use, or None.
+    - model_filename: if no model specified, will load a TransformerAutoencoder object from the given filepath. 
+    - title:        The string to put at the top of the plot.
+    - filenames:    A subset of the filenames available in err_file if you don't want to plot all of them.
+    - threshold:    Error threshold for a given window to be classified as abnormal.
+    - sampling_rate: The number of seconds between each sample in the files. 
+    Remaining (ncols, xlim, ylim) are standard pyplot parameters. 
+    """
     with open(err_file, 'r') as file:
         data = json.load(file)
 
@@ -84,14 +95,16 @@ def plot_multiple_evals_on_temp(err_file, model=None, title="TEST DATA", filenam
     window_size=data["info"]["window_size"] 
     window_skip=data["info"]["window_skip"]
 
-    fig, axes = plt.subplots(ncols=ncols, nrows=nrows, figsize=figsize)
+    if filenames is None: filenames = data["data"]
+    else: filenames = [f for f in data["data"] if f.split('/')[-1].split('.')[0] in filenames]
+    nrows = int(len(filenames)/ncols)
+    if len(filenames)/ncols > nrows: nrows += 1
+
+    fig, axes = plt.subplots(ncols=ncols, nrows=nrows, figsize=figsize or (7.5*ncols, 3*nrows))
     fig.suptitle(f"{title}\nthreshold={threshold}; window_size={window_size}; window_skip={window_skip}")
     idx = 0
 
-    if filenames is None: filenames = data["data"]
-    else: filenames = [f for f in data["data"] if f.split('/')[-1].split('.')[0] in filenames]
-
-    pbar = tqdm(filenames, desc="Drawing", leave=True)
+    pbar = tqdm(filenames, desc="Generating plots", leave=True)
     for filename in pbar:
         bd = BatteryData.load(filename)
         temps = bd.timeseries_data[0].to_dict()['temperature_in_C']

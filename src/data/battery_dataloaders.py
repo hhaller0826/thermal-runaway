@@ -126,8 +126,8 @@ def get_divided_loaders(
     )
 
 def get_divided_loaders_from(
-    filelist1 = "trained_models/healthy_train_cells.json",
-    filelist2 = "trained_models/healthy_test_cells.json",
+    filelist1 = "results/trained_models/healthy_train_cells.json",
+    filelist2 = "results/trained_models/healthy_test_cells.json",
     window_size=1000,
     window_skip=1,
     batch_size=64,
