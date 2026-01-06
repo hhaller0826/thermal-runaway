@@ -31,7 +31,7 @@ class CRPSPreprocessor(BasePreprocessor):
 
         return [TimeseriesData(
                 time_in_s=df['Test_Time (s)'],
-                h2_ppmo=df['H2 (ppmo)']
+                h2_ppmo=df['H2 (ppmo)'],
                 temperature_in_C=df['Cell_Temperature (C)']
             )]
 
