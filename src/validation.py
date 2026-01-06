@@ -122,6 +122,69 @@ def plot_multiple_evals_on_temp(err_file, model=None, model_filename=DEFAULT_MOD
         idx += 1
 
 
+def draw_temp_on_err(ax, x, y, errs, window_skip, window_size, title=None):
+    ax.plot(x, y, label='Data', color='gray')
+
+    # Overlay colored dots
+    i = np.arange(len(errs))
+    idx = i * window_skip + window_size
+    # ax.scatter(x[idx], y[idx], c=colors, s=5, zorder=3)
+    ax.plot(x[idx], y[idx], label="Temperature")
+
+    ax.set_title(title)
+    ax.set_xlabel("Time (s)")
+    # ax.set_ylabel("Temp (°C)")
+
+    ax2 = ax.twinx()
+    ax2.plot(x[idx], errs[idx], linestyle='--', label="Error")
+    
+    # ax2.set_ylabel("Error")
+
+def plot_multiple_errs_on_temp(err_file, model=None, model_filename=DEFAULT_MODEL, title="TEST DATA", filenames=None, threshold=300, sampling_rate=0.1, ncols=3, figsize=None, xlim=None, ylim=None):
+    """
+    - err_file:     json file with the structure file["data"]["filename"] = list of reconstruction errors
+    - model:        The model to use, or None.
+    - model_filename: if no model specified, will load a TransformerAutoencoder object from the given filepath. 
+    - title:        The string to put at the top of the plot.
+    - filenames:    A subset of the filenames available in err_file if you don't want to plot all of them.
+    - threshold:    Error threshold for a given window to be classified as abnormal.
+    - sampling_rate: The number of seconds between each sample in the files. 
+    Remaining (ncols, xlim, ylim) are standard pyplot parameters. 
+    """
+    with open(err_file, 'r') as file:
+        data = json.load(file)
+
+    if model is None:
+        model = TransformerAutoencoder.load(model_filename)
+
+    window_size=data["info"]["window_size"] 
+    window_skip=data["info"]["window_skip"]
+
+    if filenames is None: filenames = data["data"]
+    else: filenames = [f for f in data["data"] if f.split('/')[-1].split('.')[0] in filenames]
+    nrows = int(len(filenames)/ncols)
+    if len(filenames)/ncols > nrows: nrows += 1
+
+    fig, axes = plt.subplots(ncols=ncols, nrows=nrows, figsize=figsize or (7.5*ncols, 3*nrows))
+    fig.suptitle(f"{title}\nthreshold={threshold}; window_size={window_size}; window_skip={window_skip}")
+    idx = 0
+
+    pbar = tqdm(filenames, desc="Generating plots", leave=True)
+    for filename in pbar:
+        bd = BatteryData.load(filename)
+        temps = bd.timeseries_data[0].to_dict()['temperature_in_C']
+        temps = np.array(list(temps))
+        y = temps[~np.isnan(temps)]
+        x = np.arange(len(y)) / sampling_rate
+
+        curr_row = int(idx / ncols)
+        curr_col = int(idx % ncols)
+        name = filename.split('/')[-1].split('.pkl')[0]
+        ax = axes if len(filenames) == 1 else axes[curr_col] if nrows<2 else axes[curr_row, curr_col]
+        draw_plot(ax, x, y, data["data"][filename], window_skip, window_size, title=name)
+        idx += 1
+
+
 # -----------------------------
 # Evaluating
 # -----------------------------
