@@ -44,6 +44,7 @@ class HealthyArchivePreprocessor(BasePreprocessor):
             timeseries_data=timeseries_data,
             is_healthy=True,
 
+            has_gas=False,
             anode_material=self.get_anode(cell),
             cathode_material=self.get_cathode(cell),
             nominal_capacity_in_Ah=self.get_capacity(cell),

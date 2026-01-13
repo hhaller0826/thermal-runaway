@@ -3,6 +3,8 @@ __pycache__/
 
 data/preprocessed/
 data/raw/healthy_archive_data/
+data/raw/lithos/
+data/raw/crps/
 
 results/reconstruction_errs/
 results/trained_models_old/

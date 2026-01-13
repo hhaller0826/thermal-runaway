@@ -82,6 +82,8 @@ class ORNLPreprocessor(BasePreprocessor):
             organization=org,
             timeseries_data=timeseries_data,
             is_healthy=False,
+
+            has_gas=False,            
             state_of_charge=soc,
             battery_type=battery_type,
             anode_material='graphite',

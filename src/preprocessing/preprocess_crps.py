@@ -10,13 +10,14 @@ from src.data import BatteryData, TimeseriesData
 
 from .base import BasePreprocessor
 
-@PREPROCESSORS.register()
 class CRPSPreprocessor(BasePreprocessor):
     def __init__(self, name='crps', *, display_name = 'Cell Report Physical Science', output_dir = None, silent = True):
         super().__init__(name, display_name=display_name, output_dir=output_dir, silent=silent)
 
+    def _parentdir(self) -> str: """ """
+
     def process(self, parentdir=None, **kwargs):
-        inputdir = Path(parentdir) if parentdir else Path('data/raw/crps/ThermalRunaway_Overcharge')
+        inputdir = Path(parentdir) if parentdir else Path(self._parentdir())
         return super()._process_cells(inputdir=inputdir)
 
     def get_timeseries_data(self, inputdir, cell) -> List[TimeseriesData]:
@@ -30,17 +31,25 @@ class CRPSPreprocessor(BasePreprocessor):
         assert df.size > 0
 
         return [TimeseriesData(
-                time_in_s=df['Test_Time (s)'],
-                h2_ppmo=df['H2 (ppmo)'],
-                temperature_in_C=df['Cell_Temperature (C)']
+                time_in_s=df['time'],
+                h2_ppmo=df['H2'],
+                temperature_in_C=df['temp']
             )]
 
     def get_cell_info(self, cell, timeseries_data) -> BatteryData:
-        org = 'snl' if "SNL_" in cell else 'CRPS'
-        
         return BatteryData(
             cell_id=cell,
-            organization=org,
+            organization=self.name,
             timeseries_data=timeseries_data,
             is_healthy=False,
+
+            has_gas=True,
         )
+
+@PREPROCESSORS.register()
+class TROverchargePreprocessor(CRPSPreprocessor):
+    def _parentdir(self): return 'data/raw/crps/ThermalRunaway_Overcharge'
+    
+@PREPROCESSORS.register()
+class TROverheatPreprocessor(CRPSPreprocessor):
+    def _parentdir(self): return 'data/raw/crps/ThermalRunaway_Overheat'

@@ -30,17 +30,17 @@ class LithosPreprocessor(BasePreprocessor):
         assert df.size > 0
 
         return [TimeseriesData(
-                time_in_s=df['Test_Time (s)'],
-                h2_ppmo=df['H2 (ppmo)'],
-                temperature_in_C=df['Cell_Temperature (C)']
+                time_in_s=df['time'],
+                h2_ppmo=df['H2'],
+                temperature_in_C=df['temp']
             )]
 
     def get_cell_info(self, cell, timeseries_data) -> BatteryData:
-        org = 'snl' if "SNL_" in cell else 'Lithos'
-        
         return BatteryData(
             cell_id=cell,
-            organization=org,
+            organization=self.name,
             timeseries_data=timeseries_data,
             is_healthy=True,
+            
+            has_gas = True,
         )

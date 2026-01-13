@@ -4,7 +4,7 @@ import re
 import logging
 
 from typing import List
-from tqdm.auto import tqdm
+from tqdm import tqdm
 from pathlib import Path
 
 from src.config import config

@@ -109,10 +109,10 @@ def get_divided_loaders(
     num_workers=4,
     pin_memory=True,
     preload=False,
-    healthy=True,
+    configfile='healthy',
     index_tuple=(1)
 ):
-    train_cells, test_cells = get_divided_train_test(test_size, 'healthy' if healthy else 'unhealthy')
+    train_cells, test_cells = get_divided_train_test(test_size, configfile)
 
     return help_get_divided_loaders(
         train_cells if test_size < 1.0 else None,
