@@ -11,5 +11,5 @@ from .preprocess_crps import TROverchargePreprocessor, TROverheatPreprocessor
 from .preprocess_lithosBG import LithosPreprocessor
 
 SUPPORTED_SOURCES = {
-    'DATASETS': ['CALCE', 'HNEI', 'OX', 'ORNL', 'SNL', 'ULPurdue', 'TROvercharge', 'TROverheat', 'Lithos'],
+    'DATASETS': ['CALCE', 'HNEI', 'OX', 'ORNL', 'SNL', 'ULPurdue', 'SynthGasTR', 'Lithos'],
 }

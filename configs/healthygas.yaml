@@ -6,3 +6,8 @@ train_test_split:
       - False
     is_healthy:
       - False
+
+  # any Timeseries data with any of the following terms in its description will be EXCLUDED.
+  timeseries_filter: 
+    - '4'
+    - '5'

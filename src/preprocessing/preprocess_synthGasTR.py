@@ -11,14 +11,14 @@ from src.data import BatteryData, TimeseriesData
 from .base import BasePreprocessor
 
 @PREPROCESSORS.register()
-class LithosPreprocessor(BasePreprocessor):
-    def __init__(self, name='lithos', *, display_name = 'Lithos Healthy Data', output_dir = None, silent = True):
+class SynthGasTR(BasePreprocessor):
+    def __init__(self, name='sgtr', *, display_name = 'Synthetic Gas Data (Thermal Runaway)', output_dir = None, silent = True):
         super().__init__(name, display_name=display_name, output_dir=output_dir, silent=silent)
 
     def process(self, parentdir=None, **kwargs):
-        inputdir = Path(parentdir) if parentdir else Path('data/raw/lithos')
+        inputdir = Path(parentdir) if parentdir else Path('data/raw/synthetic_gas_TR')
         return super()._process_cells(inputdir=inputdir)
-
+    
     def get_timeseries_data(self, inputdir, cell) -> List[TimeseriesData]:
         """ 
         Get a list of TimeseriesData objects from the given filepath
@@ -30,20 +30,25 @@ class LithosPreprocessor(BasePreprocessor):
         assert df.size > 0
 
         return [TimeseriesData(
-                time_in_s=pd.Series(list(range(len(df)))),
+                time_in_s=df['t'],
                 co_ppm=df['CO'],
                 h2_ppm=df['H2'],
                 co2_ppm=df['CO2'],
                 temperature_in_C=df['Temp'],
-                description="BeforeTest" + cell[-1:]
+                description=cell[-5:]
             )]
-
+    
     def get_cell_info(self, cell, timeseries_data) -> BatteryData:
         return BatteryData(
             cell_id=cell,
             organization=self.name,
             timeseries_data=timeseries_data,
-            is_healthy=True,
+            is_healthy=False,
             
-            has_gas = True,
+            has_gas = True
         )
+    
+    def check_processed_file(self, processed_file):
+        if 'master_synth_index' in processed_file: # skip this file
+            return True
+        return super().check_processed_file(processed_file)
