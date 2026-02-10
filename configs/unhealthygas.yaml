@@ -1,0 +1,8 @@
+name: 'unhealthy gas data'
+train_test_split:
+  # can be any attribute of the BatteryData object. Values listed here will be EXCLUDED.
+  battery_filters: 
+    has_gas: 
+      - False
+    is_healthy:
+      - True

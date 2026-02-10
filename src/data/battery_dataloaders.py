@@ -42,12 +42,19 @@ class BatteryDataset(Dataset):
 
                 for data in battery.timeseries_data:
                     scaledx = data.to_numpy()[:, self.index_tuple]
-                    if len(scaledx.shape) == 1: # only 1 column
+                    num_sensors = len(scaledx.shape)
+                    if num_sensors == 1: # only 1 column
                         temps = scaledx[~np.isnan(scaledx)] 
                     else:
                         temps = scaledx[~np.isnan(scaledx).any(axis=1)]
 
-                    for start in range(0, len(temps) - self.window_size, self.window_skip):
+                    last_buffer = len(temps) - self.window_size
+                    if last_buffer < 0:
+                        pad_width = [(0, -last_buffer)] + [(0, 0)] * (num_sensors-1)
+                        temps = np.pad(temps, pad_width, mode='constant', constant_values=0)
+
+
+                    for start in range(0, max(last_buffer, 1), self.window_skip):
                         self.index_map.append((file_idx, start))
                         if self.preload: X.append(temps[start:start + self.window_size])
             except Exception as e:

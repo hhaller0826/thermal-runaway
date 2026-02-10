@@ -62,6 +62,62 @@ def plot_evals_on_temp(filename, evaluations, window_size, window_skip, sampling
     plt.grid(alpha=0.3)
     plt.show()
 
+def plot_errs_on_temp(filename, errors, window_size=20, window_skip=1, sampling_rate=1, figsize=(10,5), xlim=None, templim=None, errlim=None, **kwargs):
+    """
+    Plots the temperature data in the given file with dots indicating whether the data was classified as healthy
+    or unhealthy at various timesteps.
+    """
+    # Get temperature data
+    bd = BatteryData.load(filename)
+    temps = bd.timeseries_data[0].to_dict()['temperature_in_C']
+    temps = np.array(list(temps))
+    y = temps[~np.isnan(temps)]
+    x = np.arange(len(y)) / sampling_rate
+
+    # Plot the line
+    fig, ax1 = plt.subplots(figsize=figsize)
+    ax1.plot(x, y, label='Temp')
+    ax1.set_ylabel("Temperature (°C)")
+    ax1.set_xlabel("Time (s)")
+
+    # Overlay colored dots
+    i = np.arange(len(errors))
+    idx = i * window_skip + window_size
+    idx = idx[:len(x)-window_size]
+
+    
+    threshold = 200
+    # plt.fill_between(x, 200, 2000, alpha=0.3, color='pink')
+
+    ax2 = ax1.twinx()
+    # ax2.plot(x[idx], errors, label="Err", color='red', linestyle='--')
+    ax2.set_ylabel("Reconstruction Error")
+    errors = np.array(errors)
+
+    below = np.ma.masked_where(errors > threshold, errors)
+    above = np.ma.masked_where(errors <= threshold, errors)
+
+    ax2.plot(x[idx], below, color='grey', linestyle='--', linewidth=3)
+    ax2.plot(x[idx], above, color='red', linestyle='--', linewidth=3)
+
+
+
+    if xlim is not None: plt.xlim(xlim)
+    if templim is not None: ax1.set_ylim(0, templim)
+    if errlim is not None: ax2.set_ylim(0, errlim)
+
+    plt.axhline(
+        y=200,
+        color='black',
+        linewidth=0.5
+    )
+
+    # Make it nice
+    plt.suptitle(f"{filename.split('/')[-1].split('.')[0]}", fontsize=16)
+    plt.title(f"window_size={window_size}; window_skip={window_skip}", fontdict=SUBTITLE_FONT)
+    plt.grid(alpha=0.3)
+
+
 def draw_plot(ax, x, y, colors, window_skip, window_size, title=None):
     ax.plot(x, y, label='Data', color='gray')
 
@@ -188,7 +244,7 @@ def plot_multiple_errs_on_temp(err_file, model=None, model_filename=DEFAULT_MODE
 # -----------------------------
 # Evaluating
 # -----------------------------
-def evaluate_file_health(filename, model, device="mps", window_size=1000, window_skip=500, threshold=300):
+def evaluate_file_health(filename, model, device="mps", window_size=1000, window_skip=500, threshold=300, **kwargs):
     """
     Evaluate the health of all windows in the given file. 
     """
@@ -199,9 +255,9 @@ def evaluate_file_health(filename, model, device="mps", window_size=1000, window
         num_workers=4
     )
 
-    return evaluate_health(model, dataloader, device, threshold)
+    return evaluate_health(model, dataloader, device, threshold, **kwargs)
 
-def evaluate_health(model, dataloader, device, threshold):
+def evaluate_health(model, dataloader, device, threshold, **kwargs):
     """
     Evaluate the health of all timeseries windows provided by the given dataloader. 
     """
