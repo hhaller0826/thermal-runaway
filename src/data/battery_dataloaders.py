@@ -40,6 +40,7 @@ class BatteryDataset(Dataset):
                 battery = BatteryData.load(filename)
                 self.file_cache[file_idx] = None
 
+                # NOTE: index map might be handling multiple timeseries_data things weirdly
                 for data in battery.timeseries_data:
                     scaledx = data.to_numpy()[:, self.index_tuple]
                     num_sensors = len(scaledx.shape)
@@ -52,7 +53,6 @@ class BatteryDataset(Dataset):
                     if last_buffer < 0:
                         pad_width = [(0, -last_buffer)] + [(0, 0)] * (num_sensors-1)
                         temps = np.pad(temps, pad_width, mode='constant', constant_values=0)
-
 
                     for start in range(0, max(last_buffer, 1), self.window_skip):
                         self.index_map.append((file_idx, start))
@@ -133,8 +133,8 @@ def get_divided_loaders(
     )
 
 def get_divided_loaders_from(
-    filelist1 = "results/trained_models/healthy_train_cells.json",
-    filelist2 = "results/trained_models/healthy_test_cells.json",
+    filelist_train = "results/trained_models/healthy_train_cells.json",
+    filelist_test = "results/trained_models/healthy_test_cells.json",
     window_size=1000,
     window_skip=1,
     batch_size=64,
@@ -142,10 +142,10 @@ def get_divided_loaders_from(
     preload=False,
     index_tuple=(1)
 ):
-    with open(filelist1) as file:
+    with open(filelist_train) as file:
         train_cells = json.load(file)
 
-    with open(filelist2) as file:
+    with open(filelist_test) as file:
         test_cells = json.load(file)
 
     return help_get_divided_loaders(

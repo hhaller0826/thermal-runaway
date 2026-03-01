@@ -19,12 +19,13 @@ SUBTITLE_FONT = {
     'size': 8,
     'style': 'italic'
 }
-def evaluate_and_plot(filename, model, device='mps', window_size=1000, window_skip=500, threshold=300, sampling_rate=1):
+def evaluate_and_plot(filename, model, device='mps', window_size=1000, window_skip=500, threshold=300, sampling_rate=1, index_tuple=(1)):
     """
     Evaluate the given file and plot the results over the file's temperature data. 
     """
-    evaluations = evaluate_file_health(filename, model, device, window_size, window_skip, threshold)
+    evaluations = evaluate_file_health(filename, model, device, window_size, window_skip, threshold, index_tuple)
     plot_evals_on_temp(filename, evaluations, window_size, window_skip, sampling_rate)
+    return evaluations 
 
 def plot_evals_on_temp(filename, evaluations, window_size, window_skip, sampling_rate, figsize=(10,5), xlim=None, ylim=None, **kwargs):
     """
@@ -244,12 +245,12 @@ def plot_multiple_errs_on_temp(err_file, model=None, model_filename=DEFAULT_MODE
 # -----------------------------
 # Evaluating
 # -----------------------------
-def evaluate_file_health(filename, model, device="mps", window_size=1000, window_skip=500, threshold=300, **kwargs):
+def evaluate_file_health(filename, model, device="mps", window_size=1000, window_skip=500, threshold=300, index_tuple=(1), **kwargs):
     """
     Evaluate the health of all windows in the given file. 
     """
     dataloader = DataLoader(
-        BatteryDataset([filename], window_size, window_skip, preload=True, index_tuple=(1)),
+        BatteryDataset([filename], window_size, window_skip, preload=True, index_tuple=index_tuple),
         batch_size=1,
         shuffle=False,
         num_workers=4

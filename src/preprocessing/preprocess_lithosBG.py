@@ -46,4 +46,5 @@ class LithosPreprocessor(BasePreprocessor):
             is_healthy=True,
             
             has_gas = True,
+            description='; '.join([str(getattr(ts, 'description')) for ts in timeseries_data])
         )

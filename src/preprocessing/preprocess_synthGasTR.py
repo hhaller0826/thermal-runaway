@@ -11,7 +11,7 @@ from src.data import BatteryData, TimeseriesData
 from .base import BasePreprocessor
 
 @PREPROCESSORS.register()
-class SynthGasTR(BasePreprocessor):
+class SynthGasTRPreprocessor(BasePreprocessor):
     def __init__(self, name='sgtr', *, display_name = 'Synthetic Gas Data (Thermal Runaway)', output_dir = None, silent = True):
         super().__init__(name, display_name=display_name, output_dir=output_dir, silent=silent)
 
@@ -45,7 +45,8 @@ class SynthGasTR(BasePreprocessor):
             timeseries_data=timeseries_data,
             is_healthy=False,
             
-            has_gas = True
+            has_gas = True,
+            description='; '.join([str(getattr(ts, 'description')) for ts in timeseries_data])
         )
     
     def check_processed_file(self, processed_file):
