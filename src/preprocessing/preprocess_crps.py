@@ -30,10 +30,14 @@ class CRPSPreprocessor(BasePreprocessor):
         df = df.dropna(axis=1)
         assert df.size > 0
 
+        df['zeros'] = 0
         return [TimeseriesData(
                 time_in_s=df['time'],
+                co_ppm=df['zeros'],
                 h2_ppmo=df['H2'],
-                temperature_in_C=df['temp']
+                co2_ppm=df['zeros'],
+                temperature_in_C=df['temp'],
+                description="H2 only"
             )]
 
     def get_cell_info(self, cell, timeseries_data) -> BatteryData:
@@ -53,3 +57,17 @@ class TROverchargePreprocessor(CRPSPreprocessor):
 @PREPROCESSORS.register()
 class TROverheatPreprocessor(CRPSPreprocessor):
     def _parentdir(self): return 'data/raw/crps/ThermalRunaway_Overheat'
+
+@PREPROCESSORS.register()
+class HealthyCRPSPreprocessor(CRPSPreprocessor):
+    def _parentdir(self): return 'data/raw/crps/healthy_crps'
+
+    def get_cell_info(self, cell, timeseries_data) -> BatteryData:
+        return BatteryData(
+            cell_id=cell,
+            organization=self.name,
+            timeseries_data=timeseries_data,
+            is_healthy=True,
+
+            has_gas=True,
+        )

@@ -12,5 +12,6 @@ from .preprocess_lithosBG import LithosPreprocessor
 from .preprocess_synthGasTR import SynthGasTRPreprocessor
 
 SUPPORTED_SOURCES = {
-    'DATASETS': ['CALCE', 'HNEI', 'OX', 'ORNL', 'SNL', 'ULPurdue', 'SynthGasTR', 'Lithos'],
+    'DATASETS': ['CALCE', 'HNEI', 'OX', 'ORNL', 'SNL', 'ULPurdue', 
+                'SynthGasTR', 'Lithos', 'TROvercharge', 'TROverheat', 'HealthyCRPS'],
 }

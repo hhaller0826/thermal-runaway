@@ -5,6 +5,8 @@ data/preprocessed/
 data/raw/healthy_archive_data/
 data/raw/lithos/
 data/raw/crps/
+data/raw/synthetic_csps_data/
+data/raw/synthetic_gas_tr/
 
 results/reconstruction_errs/
 results/trained_models_old/
