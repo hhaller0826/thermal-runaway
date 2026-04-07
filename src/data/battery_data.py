@@ -10,9 +10,17 @@ class TimeseriesData:
                 time_in_s: List[float],
                 temperature_in_C: List[float] = None,
                 description: str = None,
+                co_ppm: List[float] = None,
+                h2_ppmo: List[float] = None,
+                co2_ppm: List[float] = None,
                 **kwargs):
+       zeros = [0] * len(time_in_s)
+
        self.time_in_s = time_in_s
-       self.temperature_in_C = temperature_in_C
+       self.temperature_in_C = temperature_in_C if temperature_in_C is not None else zeros
+       self.co_ppm = co_ppm if co_ppm is not None else zeros 
+       self.h2_ppmo = h2_ppmo if h2_ppmo is not None else zeros
+       self.co2_ppm = co2_ppm if co2_ppm is not None else zeros
        self.description = description
       
        self.additional_data = {}
@@ -26,6 +34,9 @@ class TimeseriesData:
        return {
            'time_in_s': self.time_in_s,
            'temperature_in_C': self.temperature_in_C,
+           'co_ppm': self.co_ppm,
+           'h2_ppmo': self.h2_ppmo,
+           'co2_ppm': self.co2_ppm,
            **self.additional_data
        }
   
