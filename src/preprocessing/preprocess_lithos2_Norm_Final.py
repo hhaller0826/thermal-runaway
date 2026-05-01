@@ -10,15 +10,15 @@ from src.data import BatteryData, TimeseriesData
 
 from .base import BasePreprocessor
 
-# @PREPROCESSORS.register()
-class SynthGasTRPreprocessor(BasePreprocessor):
-    def __init__(self, name='sgtr', *, display_name = 'Synthetic Gas Data (Thermal Runaway)', output_dir = None, silent = True):
+@PREPROCESSORS.register()
+class Lithos2NormPreprocessor(BasePreprocessor):
+    def __init__(self, name='Lithos2_Norm_Final', *, display_name = 'Lithos Healthy Data', output_dir = None, silent = True):
         super().__init__(name, display_name=display_name, output_dir=output_dir, silent=silent)
 
     def process(self, parentdir=None, **kwargs):
-        inputdir = Path(parentdir) if parentdir else Path('data/raw/synthetic_gas_TR')
+        inputdir = Path(parentdir) if parentdir else Path('data/raw/Final Datasets/Normal/Lithos2_Final_Norm')
         return super()._process_cells(inputdir=inputdir)
-    
+
     def get_timeseries_data(self, inputdir, cell) -> List[TimeseriesData]:
         """ 
         Get a list of TimeseriesData objects from the given filepath
@@ -29,27 +29,23 @@ class SynthGasTRPreprocessor(BasePreprocessor):
         df = df.dropna(axis=1)
         assert df.size > 0
 
+        df['zeros'] = 0
         return [TimeseriesData(
-                time_in_s=df['t'],
+                time_in_s=df['time'],
                 co_ppm=df['CO'],
                 h2_ppm=df['H2'],
-                co2_ppm=df['CO2'],
-                temperature_in_C=df['Temp'],
-                description=cell[-5:]
+                co2_ppm=df['zeros'],
+                temperature_in_C=df['temp'],
+                description="BeforeTest" + cell[-1:]
             )]
-    
+
     def get_cell_info(self, cell, timeseries_data) -> BatteryData:
         return BatteryData(
             cell_id=cell,
             organization=self.name,
             timeseries_data=timeseries_data,
-            is_healthy=False,
+            is_healthy=True,
             
             has_gas = True,
             description='; '.join([str(getattr(ts, 'description')) for ts in timeseries_data])
         )
-    
-    def check_processed_file(self, processed_file):
-        if 'master_synth_index' in processed_file: # skip this file
-            return True
-        return super().check_processed_file(processed_file)

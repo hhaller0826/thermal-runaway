@@ -10,8 +10,8 @@ from src.data import BatteryData, TimeseriesData
 
 from .base import BasePreprocessor
 
-class CRPSPreprocessor(BasePreprocessor):
-    def __init__(self, name='crps', *, display_name = 'Cell Report Physical Science', output_dir = None, silent = True):
+class ULPreprocessor(BasePreprocessor):
+    def __init__(self, name='UL_Final', *, display_name = 'Cell Report Physical Science', output_dir = None, silent = True):
         super().__init__(name, display_name=display_name, output_dir=output_dir, silent=silent)
 
     def _parentdir(self) -> str: """ """
@@ -33,12 +33,36 @@ class CRPSPreprocessor(BasePreprocessor):
         df['zeros'] = 0
         return [TimeseriesData(
                 time_in_s=df['time'],
-                co_ppm=df['zeros'],
-                h2_ppmo=df['H2'],
+                co_ppm=df['CO'],
+                h2_ppmo=df['H2'] if 'H2' in df.columns else df['zeros'],
                 co2_ppm=df['zeros'],
                 temperature_in_C=df['temp'],
                 description="H2 only"
             )]
+
+    
+
+# @PREPROCESSORS.register()
+# class TROverchargePreprocessor(CRPSPreprocessor):
+#     def _parentdir(self): return 'data/raw/crps/ThermalRunaway_Overcharge'
+    
+@PREPROCESSORS.register()
+class ULNormPreprocessor(ULPreprocessor):
+    def _parentdir(self): return 'data/raw/Final Datasets/Normal/UL_Final_Norm'
+
+    def get_cell_info(self, cell, timeseries_data) -> BatteryData:
+        return BatteryData(
+            cell_id=cell,
+            organization=self.name,
+            timeseries_data=timeseries_data,
+            is_healthy=True,
+
+            has_gas=True,
+        )
+
+@PREPROCESSORS.register()
+class ULTRPreprocessor(ULPreprocessor):
+    def _parentdir(self): return 'data/raw/Final Datasets/TR/UL_Final_TR'
 
     def get_cell_info(self, cell, timeseries_data) -> BatteryData:
         return BatteryData(
@@ -50,43 +74,3 @@ class CRPSPreprocessor(BasePreprocessor):
             has_gas=True,
         )
 
-# @PREPROCESSORS.register()
-class TROverchargePreprocessor(CRPSPreprocessor):
-    def _parentdir(self): return 'data/raw/crps/ThermalRunaway_Overcharge'
-    
-# @PREPROCESSORS.register()
-class TROverheatPreprocessor(CRPSPreprocessor):
-    def _parentdir(self): return 'data/raw/crps/ThermalRunaway_Overheat'
-
-# @PREPROCESSORS.register()
-class HealthyCRPSPreprocessor(CRPSPreprocessor):
-    def _parentdir(self): return 'data/raw/crps/healthy_crps'
-
-    def get_cell_info(self, cell, timeseries_data) -> BatteryData:
-        return BatteryData(
-            cell_id=cell,
-            organization=self.name,
-            timeseries_data=timeseries_data,
-            is_healthy=True,
-
-            has_gas=True,
-        )
-    
-# FINAL
-# @PREPROCESSORS.register()
-class CRPSTRPreprocessor(CRPSPreprocessor):
-    def _parentdir(self): return 'data/raw/Final Datasets/TR/CRPS_Final_TR'
-
-# @PREPROCESSORS.register()
-class CRPSNormPreprocessor(CRPSPreprocessor):
-    def _parentdir(self): return 'data/raw/Final Datasets/Normal/CRPS_Final_Norm'
-
-    def get_cell_info(self, cell, timeseries_data) -> BatteryData:
-        return BatteryData(
-            cell_id=cell,
-            organization=self.name,
-            timeseries_data=timeseries_data,
-            is_healthy=True,
-
-            has_gas=True,
-        )

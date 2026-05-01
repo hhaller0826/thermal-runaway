@@ -10,13 +10,13 @@ from src.data import BatteryData, TimeseriesData
 
 from .base import BasePreprocessor
 
-# @PREPROCESSORS.register()
-class SynthGasTRPreprocessor(BasePreprocessor):
-    def __init__(self, name='sgtr', *, display_name = 'Synthetic Gas Data (Thermal Runaway)', output_dir = None, silent = True):
+@PREPROCESSORS.register()
+class Lithos2TRPreprocessor(BasePreprocessor):
+    def __init__(self, name='Lithos2_TR_Final', *, display_name = 'Synthetic Gas Data (Thermal Runaway)', output_dir = None, silent = True):
         super().__init__(name, display_name=display_name, output_dir=output_dir, silent=silent)
 
     def process(self, parentdir=None, **kwargs):
-        inputdir = Path(parentdir) if parentdir else Path('data/raw/synthetic_gas_TR')
+        inputdir = Path(parentdir) if parentdir else Path('data/raw/Final Datasets/TR/Lithos2_Final_TR')
         return super()._process_cells(inputdir=inputdir)
     
     def get_timeseries_data(self, inputdir, cell) -> List[TimeseriesData]:
@@ -29,12 +29,13 @@ class SynthGasTRPreprocessor(BasePreprocessor):
         df = df.dropna(axis=1)
         assert df.size > 0
 
+        df['zeros'] = 0
         return [TimeseriesData(
-                time_in_s=df['t'],
+                time_in_s=df['time'],
                 co_ppm=df['CO'],
                 h2_ppm=df['H2'],
-                co2_ppm=df['CO2'],
-                temperature_in_C=df['Temp'],
+                co2_ppm=df['zeros'],
+                temperature_in_C=df['temp'],
                 description=cell[-5:]
             )]
     

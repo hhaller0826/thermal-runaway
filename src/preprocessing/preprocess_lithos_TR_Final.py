@@ -10,13 +10,13 @@ from src.data import BatteryData, TimeseriesData
 
 from .base import BasePreprocessor
 
-# @PREPROCESSORS.register()
-class SynthGasTRPreprocessor(BasePreprocessor):
-    def __init__(self, name='sgtr', *, display_name = 'Synthetic Gas Data (Thermal Runaway)', output_dir = None, silent = True):
+@PREPROCESSORS.register()
+class LithosTRPreprocessor(BasePreprocessor):
+    def __init__(self, name='Lithos_TR_Final', *, display_name = 'TR Lithos Final', output_dir = None, silent = True):
         super().__init__(name, display_name=display_name, output_dir=output_dir, silent=silent)
 
     def process(self, parentdir=None, **kwargs):
-        inputdir = Path(parentdir) if parentdir else Path('data/raw/synthetic_gas_TR')
+        inputdir = Path(parentdir) if parentdir else Path('data/raw/Final Datasets/TR/Lithos_Final_TR')
         return super()._process_cells(inputdir=inputdir)
     
     def get_timeseries_data(self, inputdir, cell) -> List[TimeseriesData]:

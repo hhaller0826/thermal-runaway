@@ -2,6 +2,7 @@
 import os
 import re
 import pandas as pd
+import numpy as np
 
 from typing import List
 from pathlib import Path
@@ -31,8 +32,12 @@ class HealthyArchivePreprocessor(BasePreprocessor):
         df = df.dropna(axis=1)
         assert df.size > 0
 
+        df['H2'] = np.clip(np.random.poisson(lam=2.5, size=len(df)), 0, 19)
+        df['CO'] = np.clip(np.random.poisson(lam=1, size=len(df)), 0, 5)
         return [TimeseriesData(
                 time_in_s=df['Test_Time (s)'],
+                co_ppm = df['CO'],
+                h2_ppmo = df['H2'],
                 temperature_in_C=df['Cell_Temperature (C)']
             )]
         

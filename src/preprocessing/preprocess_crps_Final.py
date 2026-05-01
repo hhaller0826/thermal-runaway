@@ -11,7 +11,7 @@ from src.data import BatteryData, TimeseriesData
 from .base import BasePreprocessor
 
 class CRPSPreprocessor(BasePreprocessor):
-    def __init__(self, name='crps', *, display_name = 'Cell Report Physical Science', output_dir = None, silent = True):
+    def __init__(self, name='CRPS_Final', *, display_name = 'Cell Report Physical Science', output_dir = None, silent = True):
         super().__init__(name, display_name=display_name, output_dir=output_dir, silent=silent)
 
     def _parentdir(self) -> str: """ """
@@ -50,34 +50,13 @@ class CRPSPreprocessor(BasePreprocessor):
             has_gas=True,
         )
 
-# @PREPROCESSORS.register()
-class TROverchargePreprocessor(CRPSPreprocessor):
-    def _parentdir(self): return 'data/raw/crps/ThermalRunaway_Overcharge'
+
     
-# @PREPROCESSORS.register()
-class TROverheatPreprocessor(CRPSPreprocessor):
-    def _parentdir(self): return 'data/raw/crps/ThermalRunaway_Overheat'
-
-# @PREPROCESSORS.register()
-class HealthyCRPSPreprocessor(CRPSPreprocessor):
-    def _parentdir(self): return 'data/raw/crps/healthy_crps'
-
-    def get_cell_info(self, cell, timeseries_data) -> BatteryData:
-        return BatteryData(
-            cell_id=cell,
-            organization=self.name,
-            timeseries_data=timeseries_data,
-            is_healthy=True,
-
-            has_gas=True,
-        )
-    
-# FINAL
-# @PREPROCESSORS.register()
+@PREPROCESSORS.register()
 class CRPSTRPreprocessor(CRPSPreprocessor):
     def _parentdir(self): return 'data/raw/Final Datasets/TR/CRPS_Final_TR'
 
-# @PREPROCESSORS.register()
+@PREPROCESSORS.register()
 class CRPSNormPreprocessor(CRPSPreprocessor):
     def _parentdir(self): return 'data/raw/Final Datasets/Normal/CRPS_Final_Norm'
 
